@@ -5,6 +5,9 @@ import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import Secret from '../views/Secret.vue'
 
+import * as firebase from 'firebase/app'
+import 'firebase/auth'
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -26,7 +29,8 @@ const routes = [
   {
     path: '/secret',
     name: 'secret',
-    component: Secret
+    component: Secret,
+    meta: {requiresAuth: true}
   },
   
   {
@@ -43,6 +47,17 @@ const router = new VueRouter({
   mode: 'history',
   base: process.env.BASE_URL,
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const isAuthenticated = firebase.auth().currentUser;
+
+  if(requiresAuth && !isAuthenticated) {
+    next('/login');
+  } else {
+    next();
+  }
 })
 
 export default router
